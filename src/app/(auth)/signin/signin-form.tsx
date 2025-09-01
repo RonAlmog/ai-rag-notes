@@ -11,16 +11,17 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { useAuthActions } from "@convex-dev/auth/react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { AuthFormValues, signinSchema } from "../schema";
-import { useAuthActions } from "@convex-dev/auth/react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { AuthFormValues, signinSchema } from "../schema";
 
 export function SigninForm() {
   const [step, setStep] = useState<"signIn" | "signUp">("signIn");
+
   const { signIn } = useAuthActions();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -35,13 +36,16 @@ export function SigninForm() {
   });
 
   async function onSubmit(values: AuthFormValues) {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-      await signIn("password", { ...values, flow: step });
+      await signIn("password", {
+        ...values,
+        flow: step,
+      });
       toast.success(
         step === "signIn"
-          ? "Signed in successfully!"
-          : "Account created successfully!"
+          ? "Signed in successfully"
+          : "Account created successfully"
       );
       router.push("/notes");
     } catch (error) {
@@ -53,10 +57,10 @@ export function SigninForm() {
       ) {
         form.setError("root", {
           type: "manual",
-          message: "Invalid Credentials",
+          message: "Invalid credentials.",
         });
       } else {
-        toast.error("An unexpected error occurred");
+        toast.error("Something went wrong. Please try again.");
       }
     } finally {
       setIsLoading(false);
@@ -113,7 +117,7 @@ export function SigninForm() {
                 {form.formState.errors.root.message}
               </div>
             )}
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full" disabled={isLoading}>
               {step === "signIn" ? "Sign In" : "Sign Up"}
             </Button>
           </form>
@@ -121,7 +125,6 @@ export function SigninForm() {
         <Button
           variant="link"
           type="button"
-          disabled={isLoading}
           className="w-full text-sm text-muted-foreground cursor-pointer"
           onClick={() => {
             setStep(step === "signIn" ? "signUp" : "signIn");
