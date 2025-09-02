@@ -1,6 +1,7 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { internalMutation, mutation, query } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { embed } from "ai";
 
 export const getUserNotes = query({
   args: {},
@@ -17,15 +18,34 @@ export const getUserNotes = query({
   },
 });
 
-export const createNote = mutation({
-  args: { title: v.string(), body: v.string() },
+export const createNoteWithEmbeddings = internalMutation({
+  args: {
+    title: v.string(),
+    body: v.string(),
+    userId: v.id("users"),
+    embeddings: v.array(
+      v.object({
+        embedding: v.array(v.float64()),
+        content: v.string(),
+      })
+    ),
+  },
   returns: v.id("notes"),
   handler: async (ctx, args) => {
-    const { title, body } = args;
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Unauthorized");
+    const { title, body, userId, embeddings } = args;
 
-    return ctx.db.insert("notes", { title, body, userId });
+    const noteId = await ctx.db.insert("notes", { title, body, userId });
+
+    for (const embeddingData of embeddings) {
+      await ctx.db.insert("noteEmbeddings", {
+        embedding: embeddingData.embedding,
+        content: embeddingData.content,
+        noteId,
+        userId,
+      });
+    }
+
+    return noteId;
   },
 });
 
