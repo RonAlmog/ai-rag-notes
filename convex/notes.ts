@@ -28,3 +28,18 @@ export const createNote = mutation({
     return ctx.db.insert("notes", { title, body, userId });
   },
 });
+
+export const deleteNote = mutation({
+  args: { noteId: v.id("notes") },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Unauthorized");
+
+    const note = await ctx.db.get(args.noteId);
+    if (!note) throw new Error("Note not found");
+
+    if (note.userId !== userId) throw new Error("Unauthorized");
+
+    await ctx.db.delete(args.noteId);
+  },
+});
