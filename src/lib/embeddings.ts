@@ -1,5 +1,5 @@
 import { openai } from "@ai-sdk/openai";
-import { embedMany } from "ai";
+import { embed, embedMany } from "ai";
 
 const embeddingModel = openai.embedding("text-embedding-3-small");
 
@@ -24,4 +24,15 @@ export async function generateEmbeddings(
     content: chunks[index],
     embedding,
   }));
+}
+
+// generate single embedding
+// we need this for our chat queries.
+// later this will be compared to our user notes embeddings
+export async function generateEmbedding(value: string): Promise<number[]> {
+  const { embedding } = await embed({
+    model: embeddingModel,
+    value,
+  });
+  return embedding;
 }
