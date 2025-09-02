@@ -10,7 +10,7 @@ function generateChunks(input: string): string[] {
     .filter(Boolean);
 }
 
-export async function getEmbeddingVectors(
+export async function generateEmbeddings(
   input: string
 ): Promise<Array<{ content: string; embedding: number[] }>> {
   const chunks = generateChunks(input);
