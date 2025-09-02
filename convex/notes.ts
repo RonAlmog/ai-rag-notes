@@ -61,5 +61,15 @@ export const deleteNote = mutation({
     if (note.userId !== userId) throw new Error("Unauthorized");
 
     await ctx.db.delete(args.noteId);
+
+    // delete the embeddings as well
+    const embeddings = await ctx.db
+      .query("noteEmbeddings")
+      .withIndex("by_noteId", (q) => q.eq("noteId", args.noteId))
+      .collect();
+
+    for (const embedding of embeddings) {
+      await ctx.db.delete(embedding._id);
+    }
   },
 });
