@@ -1,7 +1,11 @@
 import { v } from "convex/values";
-import { internalMutation, mutation, query } from "./_generated/server";
+import {
+  internalMutation,
+  internalQuery,
+  mutation,
+  query,
+} from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { embed } from "ai";
 
 export const getUserNotes = query({
   args: {},
@@ -71,5 +75,36 @@ export const deleteNote = mutation({
     for (const embedding of embeddings) {
       await ctx.db.delete(embedding._id);
     }
+  },
+});
+
+export const fetchNotesByEmbeddingIds = internalQuery({
+  args: {
+    embeddingIds: v.array(v.id("noteEmbeddings")),
+  },
+  handler: async (ctx, args) => {
+    const { embeddingIds } = args;
+
+    // a quick single query would be nice here, but convex does not have "in" operator.
+    const embeddings = [];
+    for (const id of embeddingIds) {
+      const embedding = await ctx.db.get(id);
+      if (embedding) embeddings.push(embedding);
+    }
+
+    // in case multimple embeddings point to the same note,
+    // (because they are parts of the same note),
+    // we use a Set to get unique note IDs
+    const uniqueNoteIds = [...new Set(embeddings.map((e) => e.noteId))];
+
+    // we could optimize this by fetching all notes in a single query.
+    // but sadly convex doesn't support querying by multiple IDs yet
+    const results = [];
+    for (const id of uniqueNoteIds) {
+      const note = await ctx.db.get(id);
+      if (note) results.push(note);
+    }
+
+    return results;
   },
 });
