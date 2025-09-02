@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { useAuthToken } from "@convex-dev/auth/react";
 import { Bot, Expand, Minimize, Send, Trash, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, UIMessage } from "ai";
 import Markdown from "@/components/markdown";
@@ -77,7 +77,15 @@ function AIChatBox({ open, onClose }: AIChatBoxProps) {
     }
   }
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      onSubmit(e as unknown as React.FormEvent<HTMLFormElement>);
+    }
+  };
+
   if (!open) return null;
+
+  const lastMessageIsUser = messages[messages.length - 1]?.role === "user";
 
   return (
     <div
@@ -128,6 +136,8 @@ function AIChatBox({ open, onClose }: AIChatBoxProps) {
         {messages.map((message, index) => (
           <ChatMessage key={index} message={message} />
         ))}
+        {status === "submitted" && lastMessageIsUser && <Loader />}
+        {status === "error" && <ErrorMessage />}
         <div ref={messagesEndRef} />
       </div>
 
@@ -139,6 +149,7 @@ function AIChatBox({ open, onClose }: AIChatBoxProps) {
           className="max-h-[120px] min-h-[40px] resize-none overflow-y-auto"
           maxLength={1000}
           autoFocus
+          onKeyDown={handleKeyDown}
         />
         <Button
           type="submit"
@@ -196,6 +207,14 @@ function Loader() {
       <div className="bg-primary size-1.5 animate-pulse rounded-full" />
       <div className="bg-primary size-1.5 animate-pulse rounded-full delay-150" />
       <div className="bg-primary size-1.5 animate-pulse rounded-full delay-300" />
+    </div>
+  );
+}
+
+function ErrorMessage() {
+  return (
+    <div className="text-sm text-red-500">
+      An error occurred while processing your request.
     </div>
   );
 }
