@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { useAuthToken } from "@convex-dev/auth/react";
 import { Bot, Expand, Minimize, Send, Trash, X } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, UIMessage } from "ai";
 import Markdown from "@/components/markdown";
@@ -35,24 +35,43 @@ interface AIChatBoxProps {
   onClose: () => void;
 }
 
+const initialMessages: UIMessage[] = [
+  {
+    id: "123456",
+    role: "assistant",
+    parts: [
+      {
+        type: "text",
+        text: "Hello, I'm your AI assistant. How can I assist you today?",
+      },
+    ],
+  },
+];
+
 function AIChatBox({ open, onClose }: AIChatBoxProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const token = useAuthToken();
-  const { sendMessage, messages } = useChat({
+  const { sendMessage, messages, setMessages, status } = useChat({
     transport: new DefaultChatTransport({
       api: `${convexSiteUrl}/api/chat`,
       headers: {
         Authorization: `Bearer ${token}`,
       },
     }),
+    messages: initialMessages,
   });
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const isProcessing = status === "submitted" || status === "streaming";
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (inputValue.trim()) {
+    if (inputValue.trim() && !isProcessing) {
       sendMessage({ text: inputValue });
       setInputValue("");
     }
@@ -87,9 +106,10 @@ function AIChatBox({ open, onClose }: AIChatBoxProps) {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => {}}
+            onClick={() => setMessages(initialMessages)}
             className="text-primary-foreground hover:bg-primary/90 h-8 w-8"
             title="Clear chat"
+            disabled={isProcessing}
           >
             <Trash />
           </Button>
@@ -120,7 +140,11 @@ function AIChatBox({ open, onClose }: AIChatBoxProps) {
           maxLength={1000}
           autoFocus
         />
-        <Button type="submit" size="icon">
+        <Button
+          type="submit"
+          size="icon"
+          disabled={isProcessing || !inputValue.trim()}
+        >
           <Send className="size-4" />
         </Button>
       </form>
