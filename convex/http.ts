@@ -2,8 +2,10 @@ import { httpRouter } from "convex/server";
 import { auth } from "./auth";
 import { httpAction } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { convertToModelMessages, streamText, UIMessage } from "ai";
+import { convertToModelMessages, streamText, tool, UIMessage } from "ai";
 import { openai } from "@ai-sdk/openai";
+import { z } from "zod";
+import { internal } from "./_generated/api";
 
 const http = httpRouter();
 
@@ -21,7 +23,7 @@ http.route({
     const lastMessages = messages.slice(-8);
 
     const result = streamText({
-      model: openai("gpt-3.5-turbo"), // gpt-4o-mini
+      model: openai("gpt-4o"), //gpt-3.5-turbo, gpt-4o-mini
       system: `
       You are a helpful assistant that can search through the user's notes.
       Use the information from the notes to answer questions and provide insights.
@@ -31,10 +33,39 @@ http.route({
       Keep your responses concise and to the point.
       `,
       messages: convertToModelMessages(lastMessages),
+      // here is the secret: use "tools"
+      tools: {
+        findRelevantNotes: tool({
+          description:
+            "Find relevant notes from the database based on the user's query",
+          parameters: z.object({
+            query: z.string().describe("The user's query"),
+          }),
+          execute: async ({ query }) => {
+            console.log("Tool called with query:", query);
+            const relevantNotes = await ctx.runAction(
+              internal.notesActions.findRelevantNotes,
+              {
+                query,
+                userId,
+              }
+            );
+            console.log("Relevant notes found:", relevantNotes);
+
+            return relevantNotes.map((note) => ({
+              id: note._id,
+              title: note.title,
+              body: note.body,
+              creationTime: note._creationTime,
+            }));
+          },
+        }),
+      },
       onError: (error) => {
         console.error("Error occurred while streaming text:", error);
       },
     });
+
     return result.toUIMessageStreamResponse({
       headers: new Headers({
         "Access-Control-Allow-Origin": "*",
