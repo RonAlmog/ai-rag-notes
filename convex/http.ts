@@ -2,7 +2,13 @@ import { httpRouter } from "convex/server";
 import { auth } from "./auth";
 import { httpAction } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { convertToModelMessages, streamText, tool, UIMessage } from "ai";
+import {
+  convertToModelMessages,
+  stepCountIs,
+  streamText,
+  tool,
+  UIMessage,
+} from "ai";
 import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 import { internal } from "./_generated/api";
@@ -33,6 +39,7 @@ http.route({
       Keep your responses concise and to the point.
       `,
       messages: convertToModelMessages(lastMessages),
+      stopWhen: stepCountIs(5), // Stop after 5 steps with tool calls
       // here is the secret: use "tools"
       tools: {
         findRelevantNotes: tool({

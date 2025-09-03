@@ -7,7 +7,11 @@ import { useAuthToken } from "@convex-dev/auth/react";
 import { Bot, Expand, Minimize, Send, Trash, X } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport, UIMessage } from "ai";
+import {
+  DefaultChatTransport,
+  UIMessage,
+  lastAssistantMessageIsCompleteWithToolCalls,
+} from "ai";
 import Markdown from "@/components/markdown";
 
 const convexSiteUrl = process.env.NEXT_PUBLIC_CONVEX_URL?.replace(
@@ -53,6 +57,9 @@ function AIChatBox({ open, onClose }: AIChatBoxProps) {
   const [inputValue, setInputValue] = useState("");
   const token = useAuthToken();
   const { sendMessage, messages, setMessages, status } = useChat({
+    // migreation from 4 to 5
+    // Automatically submit when all tool results are available
+    sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
     transport: new DefaultChatTransport({
       api: `${convexSiteUrl}/api/chat`,
       headers: {
