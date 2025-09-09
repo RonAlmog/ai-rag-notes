@@ -80,6 +80,9 @@ export const deleteNote = mutation({
   },
 });
 
+// we did a vector search and found the most relavant embeddings.
+// from those embedings we need to find the actual notes.
+// the notes will be given to the ai to present an answer to user.
 export const fetchNotesByEmbeddingIds = internalQuery({
   args: {
     embeddingIds: v.array(v.id("noteEmbeddings")),
@@ -91,7 +94,9 @@ export const fetchNotesByEmbeddingIds = internalQuery({
     const embeddings = [];
     for (const id of embeddingIds) {
       const embedding = await ctx.db.get(id);
-      if (embedding) embeddings.push(embedding);
+      if (embedding !== null) {
+        embeddings.push(embedding);
+      }
     }
 
     // in case multimple embeddings point to the same note,
