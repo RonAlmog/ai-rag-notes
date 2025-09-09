@@ -71,8 +71,10 @@ function AIChatBox({ open, onClose }: AIChatBoxProps) {
   const isProcessing = status === "submitted" || status === "streaming";
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    if (open) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, open]);
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -82,9 +84,10 @@ function AIChatBox({ open, onClose }: AIChatBoxProps) {
     }
   }
 
+  // when user hits enter, submit, not new line.  shift-enter allows for line break
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
-      onSubmit(e as unknown as React.FormEvent<HTMLFormElement>);
+      onSubmit(e);
     }
   };
 

@@ -10,6 +10,9 @@ const schema = defineSchema({
     userId: v.id("users"),
   }).index("by_userId", ["userId"]),
 
+  // here we store the embeddings, provided by openai,
+  // for any given notes
+  // https://platform.openai.com/docs/guides/embeddings
   noteEmbeddings: defineTable({
     content: v.string(),
     noteId: v.id("notes"),
@@ -19,7 +22,7 @@ const schema = defineSchema({
     .index("by_noteId", ["noteId"])
     .vectorIndex("by_embedding", {
       vectorField: "embedding",
-      dimensions: 1536,
+      dimensions: 1536, // default for openai
       filterFields: ["userId"],
     }),
 });

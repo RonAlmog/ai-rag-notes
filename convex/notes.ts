@@ -22,6 +22,8 @@ export const getUserNotes = query({
   },
 });
 
+// internal mutation can only be called internally, not from front end.
+// for the operation, we will call the 'action', and it will call this
 export const createNoteWithEmbeddings = internalMutation({
   args: {
     title: v.string(),

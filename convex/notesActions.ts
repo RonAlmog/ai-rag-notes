@@ -22,9 +22,11 @@ export const createNote = action({
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Unauthorized");
 
+    // we want all the text from the note to be embedded. both title and body.
     const text = `${title}\n\n${body}`;
     const embeddings = await generateEmbeddings(text);
 
+    // for the creation of note and embedding, we call the convex database part (notes.ts)
     const noteId: Id<"notes"> = await ctx.runMutation(
       internal.notes.createNoteWithEmbeddings,
       {
