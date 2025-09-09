@@ -2,6 +2,8 @@
 
 convex, login with google
 
+dummy password: abc123456
+
 allways keep this running:
 npx convex dev
 

@@ -11,6 +11,7 @@ interface NoteItemProps {
 export function NoteItem({ note }: NoteItemProps) {
   function handleOpenNote() {
     // faster than router.push
+    // router uses server, this is client side only
     window.history.pushState(null, "", `?noteId=${note._id}`);
   }
   return (

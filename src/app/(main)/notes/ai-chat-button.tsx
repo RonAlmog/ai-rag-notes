@@ -58,6 +58,7 @@ function AIChatBox({ open, onClose }: AIChatBoxProps) {
     // sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
     transport: new DefaultChatTransport({
       api: `${convexSiteUrl}/api/chat`,
+      // because we are calling external api, we have to add the token for auth.
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -73,7 +74,7 @@ function AIChatBox({ open, onClose }: AIChatBoxProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+  function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (inputValue.trim() && !isProcessing) {
       sendMessage({ text: inputValue });
@@ -137,8 +138,8 @@ function AIChatBox({ open, onClose }: AIChatBoxProps) {
       </div>
 
       <div className="flex-1 space-y-4 overflow-y-auto p-3">
-        {messages.map((message, index) => (
-          <ChatMessage key={index} message={message} />
+        {messages.map((message) => (
+          <ChatMessage key={message.id} message={message} />
         ))}
         {status === "submitted" && lastMessageIsUser && <Loader />}
         {status === "error" && <ErrorMessage />}
@@ -173,6 +174,9 @@ interface ChatMessageProps {
 function ChatMessage({ message }: ChatMessageProps) {
   const currentStep = message.parts[message.parts.length - 1]; // take the last
 
+  // "message" has parts
+  // every part has type and text
+  // message also has "role" that can be user, assistant (tht's the ai), tool, and more
   return (
     <div
       className={cn(

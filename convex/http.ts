@@ -7,10 +7,16 @@ import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 import { internal } from "./_generated/api";
 
+// HTTP Actions.
+// these are public api endpoints, needed to be called by the ai-sdk.
+// https://docs.convex.dev/functions/http-actions
+
 const http = httpRouter();
 
 auth.addHttpRoutes(http);
 
+// we send our bunch of messages to this post endpoint.
+// from here it will be sent to openai for processing
 http.route({
   path: "/api/chat",
   method: "POST",
@@ -20,7 +26,9 @@ http.route({
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
     const { messages }: { messages: UIMessage[] } = await req.json();
-    const lastMessages = messages.slice(-8);
+
+    // send only last 10 messages. it's cheaper
+    const lastMessages = messages.slice(-10);
 
     const result = streamText({
       model: openai("gpt-4o"), //gpt-3.5-turbo, gpt-4o-mini
