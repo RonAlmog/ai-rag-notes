@@ -11,7 +11,7 @@ export default function Home() {
         <div className="mb-8">
           <Image
             src={logo}
-            alt="Smart Notes Logo"
+            alt="AI RAG Notes"
             width={120}
             height={120}
             className="mx-auto"
@@ -20,8 +20,8 @@ export default function Home() {
         </div>
 
         {/* Title */}
-        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight">
-          Smart Notes
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-wider">
+          AI RAG Notes
         </h1>
 
         {/* Description */}
@@ -38,24 +38,10 @@ export default function Home() {
         </div>
 
         {/* Built with section */}
-        <div className="pt-8 text-sm text-muted-foreground">
-          <p>Built with Convex and the Vercel AI SDK</p>
+        <div className="pt-8 text-sm text-muted-foreground mb-48">
+          <p>Demonstrating Vercel AI SDK with OpenAI</p>
         </div>
       </main>
-
-      {/* Footer */}
-      <footer className="mt-auto pt-16 pb-8">
-        <div className="text-center">
-          <a
-            href="https://www.youtube.com/c/codinginflow"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Full tutorial on YouTube →
-          </a>
-        </div>
-      </footer>
     </div>
   );
 }
