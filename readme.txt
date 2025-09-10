@@ -1,4 +1,14 @@
-# AI RAG Notes App
+# AI Notes App
+
+convex, login with google
+
+dummy password: abc123456
+
+allways keep this running:
+npx convex dev
+
+when running prod:
+npx @convex-dev/auth --prod
 
 https://ai-rag-notes.vercel.app
 
