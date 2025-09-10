@@ -12,11 +12,11 @@ const geistSans = Geist({
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | Smart Notes",
-    default: "Smart Notes",
+    template: "%s | RAG Notes",
+    default: "AI RAG Notes",
   },
   description:
-    "A note-taking app with AI chatbot integration built with Convex and the Vercel AI SDK.",
+    "A note-taking app with AI chatbot integration built with Vercel AI SDK.",
 };
 
 export default function RootLayout({
